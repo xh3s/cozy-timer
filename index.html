@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -24,12 +25,10 @@
       position: relative;
     }
     h1 {
-      font-size: 2.5rem; /* Smaller font size */
+      font-size: 2.5rem;
       color: #D8BFD8;
       margin-bottom: 5px;
       text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.4);
-      letter-spacing: -1px; /* Slightly reduced letter-spacing to bring words closer */
-      line-height: 1.1; /* Maintain close spacing between words */
     }
     .container {
       background-color: #3e4c59;
@@ -46,7 +45,7 @@
       background-color: #374a55;
       padding: 15px;
       border-radius: 10px;
-      margin-top: 20px; /* Added margin to give space between the title and the timer */
+      margin-top: 20px;
       margin-bottom: 25px;
       box-shadow: 0 0 15px rgba(255, 204, 102, 0.7);
       letter-spacing: 2px;
@@ -91,55 +90,14 @@
       transform: translateY(-5px);
       box-shadow: 0 5px 15px rgba(85, 239, 196, 0.5);
     }
-    /* Kittens walking animation */
-    .kitten {
-      position: absolute;
-      top: 20px;
-      left: -100px;
-      animation: walk 10s linear infinite;
-      z-index: 2;
-    }
-    .kitten img {
-      width: 60px;
-      height: auto;
-    }
-    @keyframes walk {
-      0% { left: -100px; }
-      50% { left: 50%; transform: translateX(-50%); }
-      100% { left: 100%; }
-    }
-    /* Add a background gradient and soft border effect */
-    .container:before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: radial-gradient(circle, rgba(0,0,0,0.6), rgba(0,0,0,0.4));
-      border-radius: 15px;
-      z-index: -1;
-    }
-    /* Soft glow effect for the timer */
-    .timer-display {
-      text-shadow: 0 0 10px #ffcc66, 0 0 20px #ffcc66, 0 0 30px #ffcc66;
-    }
   </style>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap">
 </head>
 <body>
-  <!-- Kitten 1 -->
-  <div class="kitten" style="animation-duration: 10s;">
-    <img src="https://i.pinimg.com/originals/5f/93/49/5f934966a1d20bae1909c9ef2278bd4c.gif" alt="kitten 1">
-  </div>
-  <!-- Kitten 2 -->
-  <div class="kitten" style="animation-duration: 12s; animation-delay: 2s;">
-    <img src="https://i.pinimg.com/originals/1c/a5/ba/1ca5ba6ee4774c4a595b2a859bc7c8e3.gif" alt="kitten 2">
-  </div>
-  <!-- Kitten 3 -->
-  <div class="kitten" style="animation-duration: 14s; animation-delay: 4s;">
-    <img src="https://media.tenor.com/rbHUnVkjloQAAAAj/cat-cute.gif" alt="kitten 3">
-  </div>
+
+  <!-- Notification Sound -->
+  <audio id="notification-sound" src="notification.mp3"></audio>
+
   <div class="container">
     <h1>Cozy Session Timer</h1>
     <div class="timer-display" id="timer">00:00</div>
@@ -153,6 +111,7 @@
       <button id="reset-btn">Reset</button>
     </div>
   </div>
+
   <script>
     let countdown;
     let timeRemaining = 0;
@@ -161,6 +120,8 @@
     const startButton = document.getElementById('start-btn');
     const resetButton = document.getElementById('reset-btn');
     const activityButtons = document.querySelectorAll('.activity-btn');
+    const notificationSound = document.getElementById('notification-sound');
+
     function startTimer() {
       if (timerActive) return;
       timerActive = true;
@@ -170,21 +131,25 @@
         if (timeRemaining <= 0) {
           clearInterval(countdown);
           timerActive = false;
+          notificationSound.play(); // Play notification sound when timer ends
           alert("Time's up!");
         }
       }, 1000);
     }
+
     function resetTimer() {
       clearInterval(countdown);
       timerActive = false;
       timeRemaining = 0;
       updateTimerDisplay();
     }
+
     function updateTimerDisplay() {
       const minutes = Math.floor(timeRemaining / 60);
       const seconds = timeRemaining % 60;
       timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     }
+
     activityButtons.forEach(button => {
       button.addEventListener('click', (e) => {
         const timeInMinutes = parseInt(e.target.getAttribute('data-time'));
@@ -192,8 +157,10 @@
         updateTimerDisplay();
       });
     });
+
     startButton.addEventListener('click', startTimer);
     resetButton.addEventListener('click', resetTimer);
   </script>
+
 </body>
 </html>
