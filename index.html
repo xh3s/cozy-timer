@@ -1,8 +1,8 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cozy Session</title>
   <title>Cozy Session Timer</title>
   <style>
     * {
@@ -25,12 +25,12 @@
       position: relative;
     }
     h1 {
-      font-size: 2.5rem;
+      font-size: 2.5rem; /* Smaller font size */
       color: #D8BFD8;
       margin-bottom: 5px;
       text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.4);
-      letter-spacing: -1px;
-      line-height: 1.1;
+      letter-spacing: -1px; /* Slightly reduced letter-spacing to bring words closer */
+      line-height: 1.1; /* Maintain close spacing between words */
     }
     .container {
       background-color: #3e4c59;
@@ -47,11 +47,10 @@
       background-color: #374a55;
       padding: 15px;
       border-radius: 10px;
-      margin-top: 20px;
+      margin-top: 20px; /* Added margin to give space between the title and the timer */
       margin-bottom: 25px;
       box-shadow: 0 0 15px rgba(255, 204, 102, 0.7);
       letter-spacing: 2px;
-      text-shadow: 0 0 10px #ffcc66, 0 0 20px #ffcc66, 0 0 30px #ffcc66;
     }
     .activity-selector {
       margin-bottom: 25px;
@@ -93,10 +92,43 @@
       transform: translateY(-5px);
       box-shadow: 0 5px 15px rgba(85, 239, 196, 0.5);
     }
+    /* Kittens walking animation */
+    .kitten {
+      position: absolute;
+      top: 20px;
+      left: -100px;
+      animation: walk 10s linear infinite;
+      z-index: 2;
+    }
+    .kitten img {
+      width: 60px;
+      height: auto;
+    }
+    @keyframes walk {
+      0% { left: -100px; }
+      50% { left: 50%; transform: translateX(-50%); }
+      100% { left: 100%; }
+    }
+    /* Add a background gradient and soft border effect */
+    .container:before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle, rgba(0,0,0,0.6), rgba(0,0,0,0.4));
+      border-radius: 15px;
+      z-index: -1;
+    }
+    /* Soft glow effect for the timer */
+    .timer-display {
+      text-shadow: 0 0 10px #ffcc66, 0 0 20px #ffcc66, 0 0 30px #ffcc66;
+    }
   </style>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap">
 </head>
 <body>
-
   <!-- Kitten 1 -->
   <div class="kitten" style="animation-duration: 10s;">
     <img src="https://i.pinimg.com/originals/5f/93/49/5f934966a1d20bae1909c9ef2278bd4c.gif" alt="kitten 1">
@@ -108,93 +140,61 @@
   <!-- Kitten 3 -->
   <div class="kitten" style="animation-duration: 14s; animation-delay: 4s;">
     <img src="https://media.tenor.com/rbHUnVkjloQAAAAj/cat-cute.gif" alt="kitten 3">
-  
+  </div>
   <div class="container">
     <h1>Cozy Session Timer</h1>
     <div class="timer-display" id="timer">00:00</div>
     <div class="activity-selector">
       <button class="activity-btn" data-time="15">Quick (15 mins)</button>
       <button class="activity-btn" data-time="45">Relaxed (45 mins)</button>
-      <button class="activity-btn" data-time="60">Comfy (60 mins)</button>
+      <button class="activity-btn" data-time="30">Comfy (60 mins)</button>
     </div>
     <div class="controls">
       <button id="start-btn">Start</button>
       <button id="reset-btn">Reset</button>
     </div>
   </div>
-
   <script>
-    let worker = new Worker("worker.js");
+    let countdown;
     let timeRemaining = 0;
-    const timerDisplay = document.getElementById("timer");
-    const startButton = document.getElementById("start-btn");
-    const resetButton = document.getElementById("reset-btn");
-    const activityButtons = document.querySelectorAll(".activity-btn");
-
-    // Load notification sound
-    const notificationSound = new Audio("mixkit-positive-notification-951.mp3");
-
-    // Listen for messages from the worker
-    worker.onmessage = function (e) {
-        timeRemaining = e.data.timeRemaining;
-        updateTimerDisplay();
-
-        if (e.data.done) {
-            notifyUser();
-            notificationSound.play();
-        }
-    };
-
-    // Start Timer
+    let timerActive = false;
+    const timerDisplay = document.getElementById('timer');
+    const startButton = document.getElementById('start-btn');
+    const resetButton = document.getElementById('reset-btn');
+    const activityButtons = document.querySelectorAll('.activity-btn');
     function startTimer() {
-        worker.postMessage({ command: "start", time: timeRemaining });
-    }
-
-    // Reset Timer
-    function resetTimer() {
-        worker.postMessage({ command: "stop" });
-        timeRemaining = 0;
+      if (timerActive) return;
+      timerActive = true;
+      countdown = setInterval(() => {
+        timeRemaining--;
         updateTimerDisplay();
+        if (timeRemaining <= 0) {
+          clearInterval(countdown);
+          timerActive = false;
+          alert("Time's up!");
+        }
+      }, 1000);
     }
-
-    // Update Timer Display
+    function resetTimer() {
+      clearInterval(countdown);
+      timerActive = false;
+      timeRemaining = 0;
+      updateTimerDisplay();
+    }
     function updateTimerDisplay() {
-        const minutes = Math.floor(timeRemaining / 60);
-        const seconds = timeRemaining % 60;
-        timerDisplay.textContent = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+      const minutes = Math.floor(timeRemaining / 60);
+      const seconds = timeRemaining % 60;
+      timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     }
-
-    // Request Notification Permission
-    function requestNotificationPermission() {
-        if (Notification.permission !== "granted") {
-            Notification.requestPermission();
-        }
-    }
-
-    // Notify User When Time's Up
-    function notifyUser() {
-        if (Notification.permission === "granted") {
-            new Notification("Cozy Session Timer", {
-                body: "Time's up!",
-                icon: "https://cdn-icons-png.flaticon.com/512/2917/2917995.png"
-            });
-        }
-    }
-
-    // Event Listeners for Activity Buttons
     activityButtons.forEach(button => {
-        button.addEventListener("click", (e) => {
-            timeRemaining = parseInt(e.target.getAttribute("data-time")) * 60;
-            updateTimerDisplay();
-        });
+      button.addEventListener('click', (e) => {
+        const timeInMinutes = parseInt(e.target.getAttribute('data-time'));
+        timeRemaining = timeInMinutes * 60; // Convert to seconds
+        updateTimerDisplay();
+      });
     });
-
-    // Event Listeners for Start and Reset Buttons
-    startButton.addEventListener("click", startTimer);
-    resetButton.addEventListener("click", resetTimer);
-
-    // Ask for notification permission on page load
-    requestNotificationPermission();
+    startButton.addEventListener('click', startTimer);
+    resetButton.addEventListener('click', resetTimer);
   </script>
 </body>
 </html>
